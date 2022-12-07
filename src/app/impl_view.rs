@@ -13,6 +13,7 @@ use notify::DebouncedEvent;
 use crate::app::{App, MessageKind};
 use crate::habit::{HabitWrapper, ViewMode};
 use crate::utils::{self, GRID_WIDTH, VIEW_HEIGHT, VIEW_WIDTH};
+use crate::CONFIGURATION;
 
 impl View for App {
     fn draw(&self, printer: &Printer) {
@@ -78,96 +79,89 @@ impl View for App {
         if self.habits.is_empty() {
             return EventResult::Ignored;
         }
-        match e {
-            Event::Key(Key::Right) | Event::Key(Key::Tab) | Event::Char('l') => {
-                self.set_focus(Absolute::Right);
-                return EventResult::Consumed(None);
-            }
-            Event::Key(Key::Left) | Event::Shift(Key::Tab) | Event::Char('h') => {
-                self.set_focus(Absolute::Left);
-                return EventResult::Consumed(None);
-            }
-            Event::Key(Key::Up) | Event::Char('k') => {
-                self.set_focus(Absolute::Up);
-                return EventResult::Consumed(None);
-            }
-            Event::Key(Key::Down) | Event::Char('j') => {
-                self.set_focus(Absolute::Down);
-                return EventResult::Consumed(None);
-            }
 
-            Event::Char('K') => {
-                self.move_cursor(Absolute::Up);
-                return EventResult::Consumed(None);
-            }
-            Event::Char('H') => {
-                self.move_cursor(Absolute::Left);
-                return EventResult::Consumed(None);
-            }
-            Event::Char('J') => {
-                self.move_cursor(Absolute::Down);
-                return EventResult::Consumed(None);
-            }
-            Event::Char('L') => {
-                self.move_cursor(Absolute::Right);
-                return EventResult::Consumed(None);
-            }
+        // TODO: Using a match statment, it won't be able to match on a dynamic variable
+        let move_up    = e == Event::Key(Key::Up)    || e == Event::Char(CONFIGURATION.move_up());
+        let move_down  = e == Event::Key(Key::Down)  || e == Event::Char(CONFIGURATION.move_down());
+        let move_left  = e == Event::Key(Key::Left)  || e == Event::Shift(Key::Tab) || e == Event::Char(CONFIGURATION.move_left());
+        let move_right = e == Event::Key(Key::Right) || e == Event::Key(Key::Tab)   || e == Event::Char(CONFIGURATION.move_right());
 
-            Event::Char('v') => {
-                if self.habits.is_empty() {
-                    return EventResult::Consumed(None);
-                }
-                if self.habits[self.focus].inner_data_ref().view_mode() == ViewMode::Week {
-                    self.set_mode(ViewMode::Day)
-                } else {
-                    self.set_mode(ViewMode::Week)
-                }
-                return EventResult::Consumed(None);
-            }
-            Event::Char('V') => {
-                for habit in self.habits.iter_mut() {
-                    habit.inner_data_mut_ref().set_view_mode(ViewMode::Week);
-                }
-                return EventResult::Consumed(None);
-            }
-            Event::Key(Key::Esc) => {
-                for habit in self.habits.iter_mut() {
-                    habit.inner_data_mut_ref().set_view_mode(ViewMode::Day);
-                }
-                self.reset_cursor();
-                return EventResult::Consumed(None);
-            }
+        let move_prev_day   = e == Event::Char(CONFIGURATION.move_prev_day());
+        let move_next_day   = e == Event::Char(CONFIGURATION.move_next_day());
+        let move_prev_week  = e == Event::Char(CONFIGURATION.move_prev_week());
+        let move_next_week  = e == Event::Char(CONFIGURATION.move_next_week());
+        let move_prev_month = e == Event::Char(CONFIGURATION.move_prev_month());
+        let move_next_month = e == Event::Char(CONFIGURATION.move_next_month());
 
-            /* We want sifting to be an app level function,
-             * that later trickles down into each habit
-             * */
-            Event::Char(']') => {
-                self.sift_forward();
-                return EventResult::Consumed(None);
-            }
-            Event::Char('[') => {
-                self.sift_backward();
-                return EventResult::Consumed(None);
-            }
-            Event::Char('}') => {
-                self.reset_cursor();
-                return EventResult::Consumed(None);
-            }
-            Event::CtrlChar('l') => {
-                self.message.clear();
-                self.message.set_kind(MessageKind::Info);
-                return EventResult::Consumed(None);
-            }
+        let weekly_stats  = e == Event::Char(CONFIGURATION.show_weekly_stats());
+        let monthly_stats = e == Event::Char(CONFIGURATION.show_monthly_stats());
+        let clear_message = e == Event::CtrlChar(CONFIGURATION.clear_msg());
+        let escape        = e == Event::Key(Key::Esc);
 
-            /* Every keybind that is not caught by App trickles
-             * down to the focused habit.
-             * */
-            _ => {
-                if self.habits.is_empty() {
-                    return EventResult::Ignored;
-                }
-                self.habits[self.focus].on_event(e)
+        if move_up {
+            self.set_focus(Absolute::Up);
+            return EventResult::Consumed(None);
+        } else if move_down {
+            self.set_focus(Absolute::Down);
+            return EventResult::Consumed(None);
+        } else if move_left {
+            self.set_focus(Absolute::Left);
+            return EventResult::Consumed(None);
+        } else if move_right {
+            self.set_focus(Absolute::Right);
+            return EventResult::Consumed(None);
+        } else if move_prev_day {
+            self.move_cursor(Absolute::Left);
+            return EventResult::Consumed(None);
+        } else if move_next_day {
+            self.move_cursor(Absolute::Right);
+            return EventResult::Consumed(None);
+        } else if move_prev_week {
+            self.move_cursor(Absolute::Up);
+            return EventResult::Consumed(None);
+        } else if move_next_week {
+            self.move_cursor(Absolute::Down);
+            return EventResult::Consumed(None);
+        } else if move_prev_month {
+            self.sift_backward();
+            return EventResult::Consumed(None);
+        } else if move_next_month {
+            self.sift_forward();
+            return EventResult::Consumed(None);
+        } else if clear_message {
+            self.message.clear();
+            self.message.set_kind(MessageKind::Info);
+            return EventResult::Consumed(None);
+        } else if weekly_stats {
+            if self.habits.is_empty() {
+                return EventResult::Consumed(None);
             }
+            if self.habits[self.focus].inner_data_ref().view_mode() == ViewMode::Week {
+                self.set_mode(ViewMode::Day)
+            } else {
+                self.set_mode(ViewMode::Week)
+            }
+            return EventResult::Consumed(None);
+
+        } else if monthly_stats {
+            for habit in self.habits.iter_mut() {
+                habit.inner_data_mut_ref().set_view_mode(ViewMode::Week);
+            }
+            return EventResult::Consumed(None);
+        } else if escape {
+            for habit in self.habits.iter_mut() {
+                habit.inner_data_mut_ref().set_view_mode(ViewMode::Day);
+            }
+            self.reset_cursor();
+            return EventResult::Consumed(None);
         }
+        else {
+            if self.habits.is_empty() { return EventResult::Ignored; }
+            else { self.habits[self.focus].on_event(e) }
+        }
+        //     Event::Char('}') => {
+        //         self.reset_cursor();
+        //         return EventResult::Consumed(None);
+        //     }
     }
 }

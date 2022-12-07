@@ -6,6 +6,7 @@ mod habit;
 mod theme;
 mod utils;
 mod views;
+mod keybinds;
 
 use crate::app::App;
 use crate::command::{open_command_window, Command};
@@ -80,7 +81,7 @@ fn main() {
             LinearLayout::vertical().child(NamedView::new("Main", app)),
         );
         s.add_layer(layout);
-        s.add_global_callback(':', |s| open_command_window(s));
+        s.add_global_callback(CONFIGURATION.cmd_mode(), |s| open_command_window(s));
 
         s.set_theme(theme::theme_gen());
         s.run();
