@@ -13,6 +13,20 @@ pub const VIEW_WIDTH: usize = 25;
 pub const VIEW_HEIGHT: usize = 8;
 pub const GRID_WIDTH: usize = 3;
 
+#[derive(Debug, Serialize, Deserialize)]
+pub struct Aux {
+    #[serde(default = "return_false")]
+    pub auto_backfill: bool,
+}
+
+impl Default for Aux {
+    fn default() -> Self {
+        Aux {
+            auto_backfill: false,
+        }
+    }
+}
+
 #[derive(Serialize, Deserialize)]
 pub struct Characters {
     #[serde(default = "base_char")]
@@ -165,6 +179,8 @@ pub struct AppConfig {
     pub colors: Colors,
     #[serde(default)]
     pub keybindings: KeyBindings,
+    #[serde(default)]
+    pub aux: Aux,
 
 }
 
@@ -174,6 +190,7 @@ impl Default for AppConfig {
             look:        Default::default(),
             colors:      Default::default(),
             keybindings: Default::default(),
+            aux:         Default::default(),
         }
     }
 }
