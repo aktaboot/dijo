@@ -1,0 +1,36 @@
+[look]
+true_chr = "·"
+false_chr = "·"
+future_chr = "·"
+bold_future = true
+bold_today = true
+bold_past = false
+
+[colors]
+reached = "cyan"
+todo = "magenta"
+inactive = "light black"
+future = "magenta"
+cursor = "light black"
+today = "dark white"
+stats_bar_bg = "light black"
+stats_bar_fg = "cyan"
+
+[keybindings]
+up = "k"
+down = "j"
+left = "h"
+right = "l"
+prev_day = "H"
+next_day = "L"
+prev_week = "K"
+next_week = "J"
+prev_month = "["
+next_month = "]"
+weekly_stats = "v"
+monthly_stats = "V"
+clear_message = "l"
+command_mode = ":"
+
+[aux]
+auto_backfill = true
