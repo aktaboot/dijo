@@ -76,16 +76,25 @@ fn main() {
         let mut s = crossterm();
 
         let app = App::load_state();
+
+
         let layout = NamedView::new(
             "Frame",
             LinearLayout::vertical().child(NamedView::new("Main", app)),
         );
+
         s.add_layer(layout);
+
         s.add_global_callback(CONFIGURATION.cmd_mode(), |s| open_command_window(s));
 
-        s.set_theme(theme::theme_gen());
-        s.run();
 
+        s.set_theme(theme::theme_gen());
+        // If the configuratoin file specifies auto backfill...
+        if CONFIGURATION.aux.auto_backfill {
+            s.call_on_name("Main", |app: &mut App| app.backfill_by_name("all"));
+        }
+
+        s.run();
         s.call_on_name("Main", |app: &mut App| app.save_state());
     }
 }
