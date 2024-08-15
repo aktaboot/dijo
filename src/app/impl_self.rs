@@ -204,6 +204,8 @@ impl App {
         let total = self.habits.iter().map(|h| h.goal()).sum::<u32>();
         let completed = total - remaining;
 
+        let hidden_count = self.habits.iter().filter(|h| h.is_visible() == false).count();
+
         let timestamp = if self.cursor.0 == today {
             format!("{}", Local::now().naive_local().date().format("%d/%b/%y"),)
         } else {
@@ -214,9 +216,10 @@ impl App {
 
         StatusLine {
             0: format!(
-                "Today: {} completed, {} remaining --{}--",
+                "Today: {} completed, {} remaining, {} hidden --{}--",
                 completed,
                 remaining,
+                hidden_count,
                 self.get_mode()
             ),
             1: timestamp,
