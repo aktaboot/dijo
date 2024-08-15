@@ -94,6 +94,30 @@ impl App {
         self.message.set_kind(MessageKind::Info);
         self.message.set_message(format!("Habit was backfilled: `{name}`"));
     }
+    pub fn hide_by_name(&mut self, name: &str) {
+        let pos = self.habits.iter_mut().position(|habit| habit.name() == name);
+        if pos.is_none()
+        {
+            self.message.set_kind(MessageKind::Error);
+            self.message.set_message(format!("Habit not found: `{name}`"));
+            return;
+        }
+        self.habits[pos.unwrap()].hide();
+        self.message.set_kind(MessageKind::Info);
+        self.message.set_message(format!("Habit was hidden: `{name}`"));
+    }
+    pub fn unhide_by_name(&mut self, name: &str) {
+        let pos = self.habits.iter_mut().position(|habit| habit.name() == name);
+        if pos.is_none()
+        {
+            self.message.set_kind(MessageKind::Error);
+            self.message.set_message(format!("Habit not found: `{name}`"));
+            return;
+        }
+        self.habits[pos.unwrap()].unhide();
+        self.message.set_kind(MessageKind::Info);
+        self.message.set_message(format!("Habit was hidden: `{name}`"));
+    }
 
     pub fn get_mode(&self) -> ViewMode {
         if self.habits.is_empty() {
@@ -138,10 +162,12 @@ impl App {
         }
     }
 
+    /// Sets the focus on a given habit
     pub fn set_focus(&mut self, d: Absolute) {
+        let visible_habits = self.habits.iter().filter(|h| h.is_visible()).count();
         match d {
             Absolute::Right => {
-                if self.focus != self.habits.len() - 1 {
+                if self.focus != visible_habits - 1 {
                     self.focus += 1;
                 }
             }
@@ -151,10 +177,10 @@ impl App {
                 }
             }
             Absolute::Down => {
-                if self.focus + GRID_WIDTH < self.habits.len() - 1 {
+                if self.focus + GRID_WIDTH < visible_habits - 1 {
                     self.focus += GRID_WIDTH;
                 } else {
-                    self.focus = self.habits.len() - 1;
+                    self.focus = visible_habits - 1;
                 }
             }
             Absolute::Up => {
@@ -340,11 +366,13 @@ impl App {
                     }
                 }
                 Command::Quit | Command::Write | Command::WriteAndQuit => self.save_state(),
-                Command::MonthNext => self.sift_forward(),
-                Command::MonthPrev => self.sift_backward(),
-                Command::Blank     => {},
+                Command::MonthNext      => self.sift_forward(),
+                Command::MonthPrev      => self.sift_backward(),
+                Command::Blank          => {},
                 Command::BackFill(name) => self.backfill_by_name(&name),
                 Command::Rename(og, new)=> self.rename_by_name(&og, &new),
+                Command::Hide(name)     => self.hide_by_name(&name),
+                Command::Unhide(name)   => self.unhide_by_name(&name)
             },
             Err(e) => {
                 self.message.set_message(e.to_string());

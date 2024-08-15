@@ -5,7 +5,7 @@ use chrono::{Date, Datelike, Duration, Local, NaiveDate, NaiveTime, TimeZone};
 use serde::{Deserialize, Serialize};
 
 use crate::command::GoalKind;
-use crate::habit::prelude::default_auto;
+use crate::habit::prelude::{default_auto, return_true};
 use crate::habit::traits::Habit;
 use crate::habit::{InnerData, TrackEvent};
 use crate::CONFIGURATION;
@@ -42,10 +42,13 @@ pub struct Bit {
 
     #[serde(default = "default_auto")]
     auto: bool,
+    #[serde(default = "return_true")]
+    visible: bool,
 
     #[serde(skip)]
     inner_data: InnerData,
 }
+
 
 impl Bit {
     pub fn new(name: impl AsRef<str>, auto: bool) -> Self {
@@ -54,6 +57,7 @@ impl Bit {
             stats: HashMap::new(),
             goal: CustomBool(false),
             auto,
+            visible: true,
             inner_data: Default::default(),
         };
     }
@@ -109,6 +113,15 @@ impl Habit for Bit {
 
     fn rename(&mut self, new_name: &str) {
         self.name = String::from(new_name);
+    }
+    fn hide(&mut self) {
+        self.visible = false;
+    }
+    fn unhide(&mut self) {
+        self.visible = true;
+    }
+    fn is_visible(&self) -> bool {
+        return self.visible;
     }
 
     fn reached_goal(&self, date: NaiveDate) -> bool {

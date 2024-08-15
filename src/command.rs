@@ -26,7 +26,9 @@ static COMMANDS: &'static [&'static str] = &[
     "help",
     "writeandquit",
     "backfill",
-    "rename"
+    "rename",
+    "hide",
+    "unhide"
 ];
 
 fn get_command_completion(prefix: &str) -> Option<String> {
@@ -165,7 +167,9 @@ pub enum Command {
     // Fill in missing days with "not done"
     BackFill(String),
     // Rename a habit
-    Rename(String, String)
+    Rename(String, String),
+    Hide(String),
+    Unhide(String)
 }
 
 #[derive(Debug)]
@@ -260,6 +264,20 @@ impl Command {
                 let new_name = args[1].to_string();
 
                 return Ok(Command::Rename(og_name, new_name));
+            }
+            "hide" => {
+                if args.is_empty() {
+                    return Err(CommandLineError::NotEnoughArgs(first, 1));
+                }
+                let name = args[0].to_string();
+                return Ok(Command::Hide(name));
+            }
+            "unhide" => {
+                if args.is_empty() {
+                    return Err(CommandLineError::NotEnoughArgs(first, 1));
+                }
+                let name = args[0].to_string();
+                return Ok(Command::Unhide(name));
             }
 
             "mprev" | "month-prev" => return Ok(Command::MonthPrev),

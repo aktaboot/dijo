@@ -1,4 +1,6 @@
+/* This entire file seems to be dedicated to reading the config */
 use cursive::theme::{BaseColor, Color};
+
 // use cursive::event::Event as CursiveEvent;
 use directories::ProjectDirs;
 use serde::{Deserialize, Serialize};

@@ -25,6 +25,9 @@ pub trait Habit {
     fn kind(&self) -> GoalKind;
     fn backfill(&mut self) -> ();
     fn rename(&mut self, new_name: &str);
+    fn hide(&mut self);
+    fn unhide(&mut self);
+    fn is_visible(&self) -> bool;
 
     fn inner_data_ref(&self) -> &InnerData;
     fn inner_data_mut_ref(&mut self) -> &mut InnerData;
@@ -45,6 +48,9 @@ pub trait HabitWrapper: erased_serde::Serialize {
     fn take_focus(&mut self, _: Direction) -> Result<EventResult, CannotFocus>;
     fn backfill(&mut self) -> ();
     fn rename(&mut self, new_name: &str);
+    fn hide(&mut self);
+    fn unhide(&mut self);
+    fn is_visible(&self) -> bool;
 
     fn inner_data_ref(&self) -> &InnerData;
     fn inner_data_mut_ref(&mut self) -> &mut InnerData;
@@ -88,6 +94,15 @@ macro_rules! auto_habit_impl {
             }
             fn backfill(&mut self) -> () {
                 Habit::backfill(self)
+            }
+            fn hide(&mut self) -> () {
+                Habit::hide(self);
+            }
+            fn unhide(&mut self) -> () {
+                Habit::unhide(self);
+            }
+            fn is_visible(&self) -> bool {
+                Habit::is_visible(self)
             }
             fn rename(&mut self, new_name: &str) {
                 Habit::rename(self, new_name);
