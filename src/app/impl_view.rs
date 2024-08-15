@@ -18,19 +18,28 @@ use crate::CONFIGURATION;
 impl View for App {
     fn draw(&self, printer: &Printer) {
         let mut offset = Vec2::zero();
-        for (idx, habit) in self.habits.iter().enumerate() {
-            if idx >= GRID_WIDTH && idx % GRID_WIDTH == 0 {
+        let mut pos = 0;
+        for habit in self.habits.iter() {
+
+            // Only draw the habit if it is visible
+            if habit.is_visible() == false {
+                continue;
+            }
+            if pos >= GRID_WIDTH && pos % GRID_WIDTH == 0 {
                 offset = offset.map_y(|y| y + VIEW_HEIGHT).map_x(|_| 0);
             }
-            habit.draw(&printer.offset(offset).focused(self.focus == idx));
+            habit.draw(&printer.offset(offset).focused(self.focus == pos));
             offset = offset.map_x(|x| x + VIEW_WIDTH + 2);
+            pos+=1;
         }
 
         offset = offset.map_x(|_| 0).map_y(|_| self.max_size().y - 2);
 
+        // This is the status bar on the bottom left
         let status = self.status();
         printer.print(offset, &status.0); // left status
 
+        // This is the date at the bottom right
         let full = self.max_size().x;
         offset = offset.map_x(|_| full - status.1.len());
         printer.print(offset, &status.1); // right status

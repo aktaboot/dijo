@@ -8,7 +8,7 @@ use chrono::NaiveDate;
 use serde::{Deserialize, Serialize};
 
 use crate::command::GoalKind;
-use crate::habit::prelude::default_auto;
+use crate::habit::prelude::{default_auto, return_true};
 use crate::habit::traits::Habit;
 use crate::habit::{InnerData, TrackEvent};
 
@@ -85,6 +85,8 @@ pub struct Float {
     precision: u8,
     #[serde(default = "default_auto")]
     auto: bool,
+    #[serde(default = "return_true")]
+    visible: bool,
 
     #[serde(skip)]
     inner_data: InnerData,
@@ -101,6 +103,7 @@ impl Float {
             },
             precision,
             auto,
+            visible: true,
             inner_data: Default::default(),
         };
     }
@@ -132,6 +135,15 @@ impl Habit for Float {
     }
     fn rename(&mut self, new_name: &str) {
         self.name = String::from(new_name);
+    }
+    fn hide(&mut self) {
+        self.visible = false;
+    }
+    fn unhide(&mut self) {
+        self.visible = true;
+    }
+    fn is_visible(&self) -> bool {
+        return self.visible;
     }
     fn reached_goal(&self, date: NaiveDate) -> bool {
         if let Some(val) = self.stats.get(&date) {

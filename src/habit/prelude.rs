@@ -33,6 +33,5 @@ impl fmt::Display for ViewMode {
     }
 }
 
-pub fn default_auto() -> bool {
-    false
-}
+pub fn default_auto() -> bool { false }
+pub fn return_true()      -> bool { true  }
