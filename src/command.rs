@@ -1,4 +1,6 @@
 use std::fmt;
+use std::fs::File;
+use std::process::exit;
 use std::str::FromStr;
 
 use cursive::event::{Event, EventResult, Key};
@@ -23,7 +25,8 @@ static COMMANDS: &'static [&'static str] = &[
     "write",
     "help",
     "writeandquit",
-    "backfill"
+    "backfill",
+    "rename"
 ];
 
 fn get_command_completion(prefix: &str) -> Option<String> {
@@ -146,7 +149,7 @@ impl FromStr for GoalKind {
     }
 }
 
-#[derive(PartialEq)]
+#[derive(Debug, PartialEq)]
 pub enum Command {
     Add(String, Option<GoalKind>, bool),
     MonthPrev,
@@ -161,6 +164,8 @@ pub enum Command {
     WriteAndQuit,
     // Fill in missing days with "not done"
     BackFill(String),
+    // Rename a habit
+    Rename(String, String)
 }
 
 #[derive(Debug)]
@@ -245,6 +250,16 @@ impl Command {
                 }
                 // Else backfill a specific habit
                 return Ok(Command::BackFill(args[0].to_string()));
+            }
+
+            "rename" | "rn" => {
+                if args.is_empty() {
+                    return Err(CommandLineError::NotEnoughArgs(first, 2));
+                }
+                let og_name  = args[0].to_string();
+                let new_name = args[1].to_string();
+
+                return Ok(Command::Rename(og_name, new_name));
             }
 
             "mprev" | "month-prev" => return Ok(Command::MonthPrev),

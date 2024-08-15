@@ -24,6 +24,7 @@ pub trait Habit {
     fn set_name(&mut self, name: impl AsRef<str>);
     fn kind(&self) -> GoalKind;
     fn backfill(&mut self) -> ();
+    fn rename(&mut self, new_name: &str);
 
     fn inner_data_ref(&self) -> &InnerData;
     fn inner_data_mut_ref(&mut self) -> &mut InnerData;
@@ -43,6 +44,7 @@ pub trait HabitWrapper: erased_serde::Serialize {
     fn required_size(&mut self, _: Vec2) -> Vec2;
     fn take_focus(&mut self, _: Direction) -> Result<EventResult, CannotFocus>;
     fn backfill(&mut self) -> ();
+    fn rename(&mut self, new_name: &str);
 
     fn inner_data_ref(&self) -> &InnerData;
     fn inner_data_mut_ref(&mut self) -> &mut InnerData;
@@ -86,6 +88,9 @@ macro_rules! auto_habit_impl {
             }
             fn backfill(&mut self) -> () {
                 Habit::backfill(self)
+            }
+            fn rename(&mut self, new_name: &str) {
+                Habit::rename(self, new_name);
             }
             fn inner_data_ref(&self) -> &InnerData {
                 Habit::inner_data_ref(self)

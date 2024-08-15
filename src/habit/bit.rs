@@ -81,7 +81,6 @@ impl Habit for Bit {
     }
 
     fn backfill(&mut self) {
-        // TODO(tyler): get all dates in stats
         // Loop through them all and if a date is missing,
         // then set it to false
         let dates: Vec<&NaiveDate> = self.stats.keys().collect();
@@ -108,6 +107,10 @@ impl Habit for Bit {
         }
     }
 
+    fn rename(&mut self, new_name: &str) {
+        self.name = String::from(new_name);
+    }
+
     fn reached_goal(&self, date: NaiveDate) -> bool {
         if let Some(val) = self.stats.get(&date) {
             if val.0 >= self.goal.0 {
@@ -118,6 +121,8 @@ impl Habit for Bit {
     }
 
     fn goal_not_reached(&self, date: NaiveDate) -> bool {
+        // Could probably be just
+        // return self.stat.get(&date).is_some();
         if let Some(val) = self.stats.get(&date){
             // return val.0;
             return true;

@@ -50,6 +50,28 @@ impl App {
         }
     }
 
+    // Missing name argument is checked by command.rs.from_string()
+    pub fn rename_by_name(&mut self, og_name: &str, new_name: &str) {
+        let og_pos = self.habits.iter_mut().position(|habit| habit.name() == og_name);
+        if og_pos.is_none()
+        {
+            self.message.set_kind(MessageKind::Error);
+            self.message.set_message(format!("Could not rename habit `{og_name}`: `{og_name}` already exists"));
+            return;
+        }
+
+        let nn_pos = self.habits.iter().position(|habit| habit.name() == new_name);
+        if nn_pos.is_some() {
+            self.message.set_kind(MessageKind::Error);
+            self.message.set_message(format!("Could not rename habit `{og_name}`: `{new_name}` already exists"));
+            return;
+        }
+
+        self.habits[og_pos.unwrap()].rename(new_name);
+        self.message.set_kind(MessageKind::Info);
+        self.message.set_message(format!("`{og_name}` renamed to `{new_name}`"));
+    }
+
     pub fn backfill_by_name(&mut self, name: &str) {
         // If no argument was given, "all" will be the name
         if name == "all" {
@@ -320,10 +342,9 @@ impl App {
                 Command::Quit | Command::Write | Command::WriteAndQuit => self.save_state(),
                 Command::MonthNext => self.sift_forward(),
                 Command::MonthPrev => self.sift_backward(),
-                Command::Blank => {},
-                Command::BackFill(name) => {
-                    self.backfill_by_name(&name);
-                }
+                Command::Blank     => {},
+                Command::BackFill(name) => self.backfill_by_name(&name),
+                Command::Rename(og, new)=> self.rename_by_name(&og, &new),
             },
             Err(e) => {
                 self.message.set_message(e.to_string());

@@ -130,6 +130,9 @@ impl Habit for Float {
     fn backfill(&mut self) -> () {
         todo!();
     }
+    fn rename(&mut self, new_name: &str) {
+        self.name = String::from(new_name);
+    }
     fn reached_goal(&self, date: NaiveDate) -> bool {
         if let Some(val) = self.stats.get(&date) {
             if val >= &self.goal {
