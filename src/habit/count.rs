@@ -56,7 +56,10 @@ impl Habit for Count {
         *self.stats.entry(date).or_insert(val) = val;
     }
     fn backfill(&mut self) -> () {
-        todo!();
+        todo!("Backfill is not implemented for `count.rs`");
+    }
+    fn rename(&mut self, new_name: &str) {
+        self.name = String::from(new_name);
     }
     fn reached_goal(&self, date: NaiveDate) -> bool {
         if let Some(val) = self.stats.get(&date) {
